@@ -35,7 +35,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Left Section - Image and Branding */}
       <div className="hidden lg:block lg:w-1/2 relative">
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/80 to-blue-400/80 z-10" />
         <img
@@ -56,10 +55,8 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right Section - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-          {/* Custom Alert */}
           {alert && (
             <div
               className={`mb-6 p-3 rounded-lg text-sm ${
