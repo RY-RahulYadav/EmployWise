@@ -53,7 +53,7 @@ Follow these steps to run the project locally:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/employwise.git
+   git clone https://github.com/RY-RahulYadav/EmployWise.git
    cd employwise
    ```
 
@@ -68,7 +68,7 @@ Follow these steps to run the project locally:
    ```
 
 4. **Open the Application**:
-   Visit `http://localhost:5173` in your browser.
+   Visit `https://employ-wise-lake.vercel.app/` in your browser.
 
 ---
 
