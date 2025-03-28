@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchUsers, deleteUser, updateUser } from '../services/api';
@@ -9,6 +7,7 @@ function UserList() {
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0); // Track total users separately
   const [search, setSearch] = useState('');
   const [alertMessage, setAlertMessage] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -18,7 +17,7 @@ function UserList() {
 
   const setAlertMessageWithTimeout = (message) => {
     setAlertMessage(message);
-    setTimeout(() => setAlertMessage(null), 3000); // Remove alert after 3 seconds
+    setTimeout(() => setAlertMessage(null), 3000);
   };
 
   useEffect(() => {
@@ -33,8 +32,9 @@ function UserList() {
       try {
         const response = await fetchUsers(page);
         setUsers(response.data.data || []);
-        const totalUsers = response.data.total || response.data.data.length;
-        setTotalPages(Math.ceil(totalUsers / usersPerPage));
+        const fetchedTotalUsers = response.data.total || response.data.data.length;
+        setTotalUsers(fetchedTotalUsers); // Set the initial total users
+        setTotalPages(Math.ceil(fetchedTotalUsers / usersPerPage));
       } catch (err) {
         setAlertMessageWithTimeout({ type: 'error', text: 'Failed to load users' });
         console.error(err);
@@ -45,22 +45,21 @@ function UserList() {
 
   const handleDelete = async (id) => {
     try {
-      await deleteUser(id); // Call the delete API
+      await deleteUser(id);
 
-      // Remove the user from the current state
       setUsers((prevUsers) => {
         const updatedUsers = prevUsers.filter((user) => user.id !== id);
 
-        // Adjust pagination based on the updated users array
-        const totalUsers = updatedUsers.length + (page - 1) * usersPerPage; // Estimate total users
-        const newTotalPages = Math.max(1, Math.ceil(totalUsers / usersPerPage));
+        // Update total users and recalculate total pages
+        const newTotalUsers = totalUsers - 1;
+        setTotalUsers(newTotalUsers);
+        const newTotalPages = Math.max(1, Math.ceil(newTotalUsers / usersPerPage));
         setTotalPages(newTotalPages);
 
-        // If the current page is empty and not the first page, go to the previous page
+        // Adjust page if necessary
         if (updatedUsers.length === 0 && page > 1) {
           setPage((prevPage) => prevPage - 1);
         } else if (page > newTotalPages && newTotalPages > 0) {
-          // If the current page exceeds the new total pages, go to the last page
           setPage(newTotalPages);
         }
 
@@ -189,40 +188,46 @@ function UserList() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map((user) => (
-            <div
-              key={user.id}
-              className="bg-gray-50 p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300"
-            >
-              <div className="flex items-center mb-4">
-                <img
-                  src={user.avatar}
-                  alt={`${user.first_name} ${user.last_name}`}
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full mr-3 object-cover"
-                />
-                <div>
-                  <p className="text-gray-700 font-medium text-sm sm:text-base">
-                    {user.first_name} {user.last_name}
-                  </p>
-                  <p className="text-gray-500 text-xs">{user.email}</p>
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className="bg-gray-50 p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300"
+              >
+                <div className="flex items-center mb-4">
+                  <img
+                    src={user.avatar}
+                    alt={`${user.first_name} ${user.last_name}`}
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full mr-3 object-cover"
+                  />
+                  <div>
+                    <p className="text-gray-700 font-medium text-sm sm:text-base">
+                      {user.first_name} {user.last_name}
+                    </p>
+                    <p className="text-gray-500 text-xs">{user.email}</p>
+                  </div>
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => openEditModal(user.id)}
+                    className="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition w-full text-sm sm:text-base"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    className="border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-100 transition w-full text-sm sm:text-base"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => openEditModal(user.id)}
-                  className="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition w-full text-sm sm:text-base"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(user.id)}
-                  className="border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-100 transition w-full text-sm sm:text-base"
-                >
-                  Delete
-                </button>
-              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-500 text-lg">
+              No search results found.
             </div>
-          ))}
+          )}
         </div>
 
         {filteredUsers.length > 0 && (
@@ -240,7 +245,7 @@ function UserList() {
             <button
               onClick={() => setPage((prev) => prev + 1)}
               className="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition w-full sm:w-auto text-sm sm:text-base disabled:bg-gray-400"
-              disabled={page === totalPages || users.length === 0}
+              disabled={page >= totalPages}
             >
               Next
             </button>
