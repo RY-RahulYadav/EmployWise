@@ -68,7 +68,7 @@ Follow these steps to run the project locally:
    ```
 
 4. **Open the Application**:
-   Visit `https://employ-wise-lake.vercel.app/` in your browser.
+   Visit `http://localhost:5173/` in your browser.
 
 ---
 
