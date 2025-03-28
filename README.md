@@ -33,7 +33,7 @@ EmployWise is a React-based user management application that integrates with the
 
 ## 🚀 Deployment
 
-The application is deployed on **Vercel**. You can access it here: [EmployWise Live Demo](#) (Replace `#` with the actual deployment link).
+The application is deployed on **Vercel**. You can access it here: [EmployWise Live Demo](https://employ-wise-lake.vercel.app/) (Replace `#` with the actual deployment link).
 
 ---
 
